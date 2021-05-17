@@ -11,6 +11,7 @@ class SVGPathScanner {
 	}
 
 	int nextCommand() {
+		skipWhitespaces();
 		return pop();
 	}
 
@@ -19,6 +20,7 @@ class SVGPathScanner {
 	}
 
 	double nextNumber() {
+		skipWhitespaces();
 		StringBuilder numstr = new StringBuilder();
 		int c;
 		done: while ((c = pop()) != -1) {
@@ -50,12 +52,15 @@ class SVGPathScanner {
 		return Double.parseDouble(numstr.toString());
 	}
 
+	private void skipWhitespaces() {
+		while (pos < d.length() && Character.isWhitespace(d.charAt(pos))) {
+			pos++;
+		}
+	}
+
 	private int pop() {
-		while (pos < d.length()) {
-			char c = d.charAt(pos++);
-			if (!Character.isWhitespace(c)) {
-				return c;
-			}
+		if (pos < d.length()) {
+			return d.charAt(pos++);
 		}
 		return -1;
 	}
