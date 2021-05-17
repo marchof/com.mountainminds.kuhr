@@ -22,6 +22,10 @@ public class QRShape {
 
 	private Function<Shape, Shape> dotTransformation = Function.identity();
 
+	private Shape logo = null;
+
+	private double padding = 0.0;
+
 	public QRShape(QRMatrix matrix) {
 		this.matrix = matrix;
 	}
@@ -36,6 +40,11 @@ public class QRShape {
 
 	public void setDotTransformation(Function<Shape, Shape> dotTransformation) {
 		this.dotTransformation = dotTransformation;
+	}
+
+	public void setLogo(Shape logo, double padding) {
+		this.logo = logo;
+		this.padding = padding;
 	}
 
 	public Shape createShape() {
@@ -55,6 +64,18 @@ public class QRShape {
 			Area a = new Area(posShape.get());
 			a.transform(AffineTransform.getTranslateInstance(pos.x, pos.y));
 			area.add(a);
+		}
+		if (logo != null) {
+			Rectangle2D src = logo.getBounds2D();
+			Rectangle dst = matrix.getLogo();
+			double scale = Math.min((dst.getWidth() - 2 * padding) / src.getWidth(),
+					(dst.getHeight() - 2 * padding) / src.getHeight());
+			AffineTransform t = AffineTransform.getTranslateInstance(dst.getCenterX(), dst.getCenterY());
+			t.concatenate(AffineTransform.getScaleInstance(scale, scale));
+			t.concatenate(AffineTransform.getTranslateInstance(-src.getCenterX(), -src.getCenterY()));
+			Area logoarea = new Area(logo);
+			logoarea.transform(t);
+			area.add(logoarea);
 		}
 		return area;
 	}

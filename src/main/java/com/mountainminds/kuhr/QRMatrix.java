@@ -1,6 +1,5 @@
 package com.mountainminds.kuhr;
 
-import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.List;
 import java.util.Map;
@@ -26,6 +25,8 @@ public class QRMatrix {
 	private final List<Rectangle> positions;
 
 	private BitMatrix matrix;
+
+	private Rectangle logo;
 
 	public QRMatrix(Object content, ErrorCorrectionLevel level) throws WriterException {
 		this.content = content.toString();
@@ -56,30 +57,37 @@ public class QRMatrix {
 		return List.copyOf(this.positions);
 	}
 
+	public Rectangle getLogo() {
+		return logo;
+	}
+
 	public void addCenteredLogo() {
-		for (int logosize = matrix.getWidth(); --logosize > 0;) {
-			BitMatrix withLogo = withLogoSpace(logosize);
+		for (int size = matrix.getWidth(); size > 0; size -= 2) {
+			Rectangle logo = new Rectangle((matrix.getWidth() - size) / 2, (matrix.getHeight() - size) / 2, size, size);
+			BitMatrix withLogo = withLogo(logo);
 			if (validate(withLogo)) {
+				this.logo = logo;
 				this.matrix = withLogo;
 				return;
 			}
 		}
 	}
 
-	public void addCenteredLogo(int logosize) {
-		BitMatrix withLogo = withLogoSpace(logosize);
+	public void addCenteredLogo(int size) {
+		Rectangle logo = new Rectangle((matrix.getWidth() - size) / 2, (matrix.getHeight() - size) / 2, size, size);
+		BitMatrix withLogo = withLogo(logo);
 		if (!validate(withLogo)) {
 			throw new IllegalArgumentException("Logo size too big, QR Code not readable.");
 		}
+		this.logo = logo;
 		this.matrix = withLogo;
 	}
 
-	private BitMatrix withLogoSpace(int logosize) {
+	private BitMatrix withLogo(Rectangle logo) {
 		BitMatrix matrix = this.matrix.clone();
-		Point center = new Point(matrix.getWidth() / 2, matrix.getHeight() / 2);
-		for (int x = 0; x < logosize; x++) {
-			for (int y = 0; y < logosize; y++) {
-				matrix.unset(center.x + x - logosize / 2, center.y + y - logosize / 2);
+		for (int x = logo.x; x < logo.x + logo.width; x++) {
+			for (int y = logo.y; y < logo.y + logo.height; y++) {
+				matrix.unset(x, y);
 			}
 		}
 		return matrix;

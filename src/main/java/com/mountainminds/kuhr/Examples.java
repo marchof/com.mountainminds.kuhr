@@ -7,6 +7,7 @@ import java.nio.file.Path;
 import java.util.function.Function;
 
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
+import com.mountainminds.kuhr.svg.SVGLoader;
 
 public class Examples {
 
@@ -54,6 +55,10 @@ public class Examples {
 		qs.setPosShape(QRShape.position(2.0, 1.0, 3.0));
 		qs.setDotTransformation(dotTransformation);
 
+		SVGLoader svgloader = new SVGLoader();
+		svgloader.load(Path.of("examples/cow.svg"));
+		qs.setLogo(svgloader.getShape(), 1.0);
+
 		Shape shape = qs.createShape();
 
 		try (java.io.Writer out = Files.newBufferedWriter(Path.of("examples/qr3.svg"), StandardCharsets.UTF_8)) {
@@ -72,6 +77,10 @@ public class Examples {
 		QRShape qs = new QRShape(qm);
 		qs.setPosShape(QRShape.position(0.0, 1.0, 1.0));
 		qs.setDotTransformation(dotTransformation);
+
+		SVGLoader svgloader = new SVGLoader();
+		svgloader.load(Path.of("examples/cow.svg"));
+		qs.setLogo(svgloader.getShape(), 0.5);
 
 		Shape shape = qs.createShape();
 
@@ -92,6 +101,10 @@ public class Examples {
 		qs.setPosShape(QRShape.position(2.0, 1.0, 1.0));
 		qs.setDotShape(QRShape.circle(0.8));
 		qs.setDotTransformation(dotTransformation);
+
+		SVGLoader svgloader = new SVGLoader();
+		svgloader.load(Path.of("examples/cow.svg"));
+		qs.setLogo(svgloader.getShape(), 0.25);
 
 		Shape shape = qs.createShape();
 
