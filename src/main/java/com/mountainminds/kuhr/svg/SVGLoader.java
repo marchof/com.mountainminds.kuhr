@@ -27,23 +27,24 @@ public class SVGLoader {
 
 	public void load(InputStream in) throws Exception {
 		DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-		element(builder.parse(in));
+		element(builder.parse(in), new SVGStyles());
 	}
 
-	private void element(Node element) {
+	private void element(Node element, SVGStyles styles) {
 		if (element.getNodeType() == Node.ELEMENT_NODE) {
+			styles.read(element);
 			switch (element.getNodeName()) {
 			case "path":
-				path(element);
+				path(element, styles);
 				break;
 			}
 		}
 		for (Node child = element.getFirstChild(); child != null; child = child.getNextSibling()) {
-			element(child);
+			element(child, new SVGStyles(styles));
 		}
 	}
 
-	private void path(Node path) {
+	private void path(Node path, SVGStyles styles) {
 		SVGPathScanner scanner = new SVGPathScanner(path.getAttributes().getNamedItem("d").getTextContent());
 		int command;
 		double lastX = 0.0, lastY = 0.0, lastBezierX = 0.0, lastBezierY = 0.0;
@@ -127,7 +128,19 @@ public class SVGLoader {
 				throw new IllegalArgumentException("Unsupported Command: " + (char) command);
 			}
 		}
-		combinedShape.add(new Area(out));
+
+		if (styles.getFill().isBlack()) {
+			combinedShape.add(new Area(out));
+		}
+		if (styles.getFill().isWhite()) {
+			combinedShape.subtract(new Area(out));
+		}
+		if (styles.getStroke().isBlack()) {
+			combinedShape.add(new Area(styles.createStroke().createStrokedShape(out)));
+		}
+		if (styles.getStroke().isWhite()) {
+			combinedShape.subtract(new Area(styles.createStroke().createStrokedShape(out)));
+		}
 	}
 
 	public Shape getShape() {
