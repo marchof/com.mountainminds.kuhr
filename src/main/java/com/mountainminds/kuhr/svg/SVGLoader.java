@@ -3,6 +3,7 @@ package com.mountainminds.kuhr.svg;
 import java.awt.Shape;
 import java.awt.geom.Area;
 import java.awt.geom.Path2D;
+import java.awt.geom.Rectangle2D;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -35,57 +36,63 @@ public class SVGLoader {
 			styles.read(element);
 			switch (element.getNodeName()) {
 			case "path":
-				path(element, styles);
+				combine(path(element), styles);
+				break;
+			case "polygon":
+				combine(polygon(element), styles);
+				break;
+			case "rect":
+				combine(rect(element), styles);
 				break;
 			}
 		}
-		for (Node child = element.getFirstChild(); child != null; child = child.getNextSibling()) {
+		for (Node child : DomReader.children(element)) {
 			element(child, new SVGStyles(styles));
 		}
 	}
 
-	private void path(Node path, SVGStyles styles) {
-		SVGPathScanner scanner = new SVGPathScanner(path.getAttributes().getNamedItem("d").getTextContent());
-		int command;
+	private Shape path(Node node) {
+		SVGPathScanner scanner = new SVGPathScanner(node, "d");
 		double lastX = 0.0, lastY = 0.0, lastBezierX = 0.0, lastBezierY = 0.0;
 		double cX1, cY1;
-		Path2D.Double out = new Path2D.Double();
-		while ((command = scanner.nextCommand()) != -1) {
+		Path2D path = new Path2D.Double();
+		while (scanner.hasMoreTokens()) {
+			int command = scanner.nextCommand();
 			switch (command) {
 			case 'M':
-				out.moveTo( //
+				path.moveTo( //
 						lastX = scanner.nextNumber(), //
 						lastY = scanner.nextNumber());
 				break;
 			case 'm':
-				out.moveTo( //
+				path.moveTo( //
 						lastX = scanner.nextNumber(lastX), //
 						lastY = scanner.nextNumber(lastY));
 				break;
 			case 'L':
-				out.lineTo( //
+				path.lineTo( //
 						lastX = scanner.nextNumber(), //
 						lastY = scanner.nextNumber());
 				break;
 			case 'l':
-				out.lineTo( //
+				path.lineTo( //
 						lastX = scanner.nextNumber(lastX), //
 						lastY = scanner.nextNumber(lastY));
 				break;
 			case 'H':
-				out.lineTo(lastX = scanner.nextNumber(), lastY);
+				path.lineTo(lastX = scanner.nextNumber(), lastY);
 				break;
 			case 'h':
-				out.lineTo(lastX = scanner.nextNumber(lastX), lastY);
+				path.lineTo(lastX = scanner.nextNumber(lastX), lastY);
 				break;
 			case 'V':
-				out.lineTo(lastX, lastY = scanner.nextNumber());
+				path.lineTo(lastX, lastY = scanner.nextNumber());
 				break;
 			case 'v':
-				out.lineTo(lastX, lastY = scanner.nextNumber(lastY));
+				path.lineTo(lastX, lastY = scanner.nextNumber(lastY));
 				break;
 			case 'C':
-				out.curveTo( //
+				path.curveTo( //
 						scanner.nextNumber(), //
 						scanner.nextNumber(), //
 						lastBezierX = scanner.nextNumber(), //
@@ -94,7 +101,7 @@ public class SVGLoader {
 						lastY = scanner.nextNumber());
 				break;
 			case 'c':
-				out.curveTo( //
+				path.curveTo( //
 						scanner.nextNumber(lastX), //
 						scanner.nextNumber(lastY), //
 						lastBezierX = scanner.nextNumber(lastX), //
@@ -105,7 +112,7 @@ public class SVGLoader {
 			case 'S':
 				cX1 = lastBezierX + 2 * (lastX - lastBezierX);
 				cY1 = lastBezierY + 2 * (lastY - lastBezierY);
-				out.curveTo(cX1, cY1, //
+				path.curveTo(cX1, cY1, //
 						lastBezierX = scanner.nextNumber(), //
 						lastBezierY = scanner.nextNumber(), //
 						lastX = scanner.nextNumber(), //
@@ -114,7 +121,7 @@ public class SVGLoader {
 			case 's':
 				cX1 = lastBezierX + 2 * (lastX - lastBezierX);
 				cY1 = lastBezierY + 2 * (lastY - lastBezierY);
-				out.curveTo(cX1, cY1, //
+				path.curveTo(cX1, cY1, //
 						lastBezierX = scanner.nextNumber(lastX), //
 						lastBezierY = scanner.nextNumber(lastY), //
 						lastX = scanner.nextNumber(lastX), //
@@ -122,24 +129,47 @@ public class SVGLoader {
 				break;
 			case 'Z':
 			case 'z':
-				out.closePath();
+				path.closePath();
 				break;
 			default:
-				throw new IllegalArgumentException("Unsupported Command: " + (char) command);
+				throw new IllegalArgumentException("Unsupported Command: " + (char) command + " in "
+						+ node.getAttributes().getNamedItem("d").getTextContent());
 			}
 		}
+		return path;
+	}
 
+	private Shape polygon(Node node) {
+		SVGPathScanner scanner = new SVGPathScanner(node, "points");
+		Path2D path = new Path2D.Double();
+		path.moveTo(scanner.nextNumber(), scanner.nextNumber());
+		while (scanner.hasMoreTokens()) {
+			path.lineTo(scanner.nextNumber(), scanner.nextNumber());
+		}
+		path.closePath();
+		return path;
+	}
+
+	private Shape rect(Node node) {
+		double x = Double.parseDouble(node.getAttributes().getNamedItem("x").getTextContent());
+		double y = Double.parseDouble(node.getAttributes().getNamedItem("y").getTextContent());
+		double w = Double.parseDouble(node.getAttributes().getNamedItem("width").getTextContent());
+		double h = Double.parseDouble(node.getAttributes().getNamedItem("height").getTextContent());
+		return new Rectangle2D.Double(x, y, w, h);
+	}
+
+	private void combine(Shape shape, SVGStyles styles) {
 		if (styles.getFill().isBlack()) {
-			combinedShape.add(new Area(out));
+			combinedShape.add(new Area(shape));
 		}
 		if (styles.getFill().isWhite()) {
-			combinedShape.subtract(new Area(out));
+			combinedShape.subtract(new Area(shape));
 		}
 		if (styles.getStroke().isBlack()) {
-			combinedShape.add(new Area(styles.createStroke().createStrokedShape(out)));
+			combinedShape.add(new Area(styles.createStroke().createStrokedShape(shape)));
 		}
 		if (styles.getStroke().isWhite()) {
-			combinedShape.subtract(new Area(styles.createStroke().createStrokedShape(out)));
+			combinedShape.subtract(new Area(styles.createStroke().createStrokedShape(shape)));
 		}
 	}
 

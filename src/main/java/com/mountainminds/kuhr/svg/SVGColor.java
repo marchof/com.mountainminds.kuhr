@@ -6,10 +6,14 @@ class SVGColor {
 
 	public static final SVGColor NONE = new SVGColor(0, 0, 0, 0);
 
+	public static final SVGColor BLACK = new SVGColor(0, 0, 0, 255);
+
+	public static final SVGColor WHITE = new SVGColor(255, 255, 255, 255);
+
 	private static final Map<String, SVGColor> NAMED_COLORS = Map.of( //
 			"none", NONE, //
-			"black", new SVGColor(0, 0, 0, 255), //
-			"white", new SVGColor(255, 255, 255, 255));
+			"black", BLACK, //
+			"white", WHITE);
 
 	public static SVGColor of(String str) {
 		SVGColor c = NAMED_COLORS.get(str);

@@ -3,6 +3,7 @@ package com.mountainminds.kuhr.svg;
 import java.awt.BasicStroke;
 import java.awt.Stroke;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -27,7 +28,7 @@ class SVGStyles {
 	private int strokeLinejoin;
 
 	public SVGStyles() {
-		this.fill = SVGColor.NONE;
+		this.fill = SVGColor.BLACK;
 		this.stroke = SVGColor.NONE;
 		this.strokeWidth = 1.0f;
 		this.strokeLinecap = BasicStroke.CAP_BUTT;
@@ -43,28 +44,23 @@ class SVGStyles {
 	}
 
 	public void read(Node node) {
-		read(node, "fill", SVGColor::of, c -> this.fill = c);
-		read(node, "stroke", SVGColor::of, c -> this.stroke = c);
-		read(node, "stroke-width", Float::parseFloat, w -> this.strokeWidth = w);
-		read(node, "stroke-linecap", LINECAPS::get, c -> this.strokeLinecap = c);
-		read(node, "stroke-linejoin", LINEJOINS::get, j -> this.strokeLinejoin = j);
+		Function<String, Optional<String>> attributes = DomReader.attributes(node);
+		read(attributes, "fill", SVGColor::of, c -> this.fill = c);
+		read(attributes, "stroke", SVGColor::of, c -> this.stroke = c);
+		read(attributes, "stroke-width", Float::parseFloat, w -> this.strokeWidth = w);
+		read(attributes, "stroke-linecap", LINECAPS::get, c -> this.strokeLinecap = c);
+		read(attributes, "stroke-linejoin", LINEJOINS::get, j -> this.strokeLinejoin = j);
 	}
 
-	private static <T> void read(Node node, String attr, Function<String, T> converter, Consumer<T> consumer) {
-		read(node, attr, text -> {
+	private static <T> void read(Function<String, Optional<String>> attributes, String attr,
+			Function<String, T> converter, Consumer<T> consumer) {
+		attributes.apply(attr).ifPresent((Consumer<String>) text -> {
 			T value = converter.apply(text);
 			if (value == null) {
 				throw new IllegalArgumentException("Invalid value " + text + " for attribute " + attr);
 			}
 			consumer.accept(value);
 		});
-	}
-
-	private static void read(Node node, String attr, Consumer<String> consumer) {
-		Node item = node.getAttributes().getNamedItem(attr);
-		if (item != null) {
-			consumer.accept(item.getTextContent());
-		}
 	}
 
 	public SVGColor getFill() {

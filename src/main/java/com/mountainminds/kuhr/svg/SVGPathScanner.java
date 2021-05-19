@@ -1,5 +1,9 @@
 package com.mountainminds.kuhr.svg;
 
+import java.util.NoSuchElementException;
+
+import org.w3c.dom.Node;
+
 class SVGPathScanner {
 
 	private String d;
@@ -10,8 +14,20 @@ class SVGPathScanner {
 		this.d = d;
 	}
 
-	int nextCommand() {
+	SVGPathScanner(Node node, String attr) {
+		Node item = node.getAttributes().getNamedItem(attr);
+		this.d = item == null ? "" : item.getTextContent();
+	}
+
+	boolean hasMoreTokens() {
 		skipWhitespaces();
+		return pos < d.length();
+	}
+
+	int nextCommand() {
+		if (!hasMoreTokens()) {
+			throw new NoSuchElementException();
+		}
 		return pop();
 	}
 
@@ -20,7 +36,9 @@ class SVGPathScanner {
 	}
 
 	double nextNumber() {
-		skipWhitespaces();
+		if (!hasMoreTokens()) {
+			throw new NoSuchElementException();
+		}
 		StringBuilder numstr = new StringBuilder();
 		int c;
 		done: while ((c = pop()) != -1) {
