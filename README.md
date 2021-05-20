@@ -1,3 +1,5 @@
+![KuhR](examples/logo.svg)
+
 # KuhR - Vector QR Code Generator
 
 Java snippets to create QR codes in customizable designs as SVGs using the

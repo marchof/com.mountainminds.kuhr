@@ -1,5 +1,6 @@
 package com.mountainminds.kuhr;
 
+import java.awt.Rectangle;
 import java.awt.Shape;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -10,6 +11,27 @@ import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
 import com.mountainminds.kuhr.svg.SVG;
 
 public class Examples {
+
+	static void logo() throws Exception {
+		String url = "KuhR";
+
+		QRMatrix qm = new QRMatrix(url, ErrorCorrectionLevel.H);
+		qm.addLogo(new Rectangle(7, 7, 7, 6));
+
+		Function<Shape, Shape> dotTransformation = ShapeTransform.roundInnerCorners(0.3);
+
+		QRShape qs = new QRShape(qm);
+		qs.setPosShape(QRShape.position(3.5, 2.0, 3.0));
+		qs.setDotShape(QRShape.circle(0.9));
+		qs.setDotTransformation(dotTransformation);
+		qs.setLogo(SVG.toShape(Path.of("examples/cow.svg")), 0.2);
+
+		Shape shape = qs.createShape();
+
+		try (java.io.Writer out = Files.newBufferedWriter(Path.of("examples/logo.svg"), StandardCharsets.UTF_8)) {
+			ShapeExport.toSVG(shape, 8, out);
+		}
+	}
 
 	static void example1() throws Exception {
 		Wifi wifi = new Wifi(Wifi.Encryption.WPA, "kuhr", "password", false);
@@ -105,6 +127,7 @@ public class Examples {
 	}
 
 	public static void main(String... args) throws Exception {
+		logo();
 		example1();
 		example2();
 		example3();

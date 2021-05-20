@@ -74,7 +74,10 @@ public class QRMatrix {
 	}
 
 	public void addCenteredLogo(int size) {
-		Rectangle logo = new Rectangle((matrix.getWidth() - size) / 2, (matrix.getHeight() - size) / 2, size, size);
+		addLogo(new Rectangle((matrix.getWidth() - size) / 2, (matrix.getHeight() - size) / 2, size, size));
+	}
+
+	public void addLogo(Rectangle logo) {
 		BitMatrix withLogo = withLogo(logo);
 		if (!validate(withLogo)) {
 			throw new IllegalArgumentException("Logo size too big, QR Code not readable.");
