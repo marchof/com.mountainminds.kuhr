@@ -17,10 +17,16 @@ class SVGColor {
 
 	public static SVGColor of(String str) {
 		SVGColor c = NAMED_COLORS.get(str);
-		if (c == null) {
-			throw new IllegalArgumentException("Unknown color " + str);
+		if (c != null) {
+			return c;
 		}
-		return c;
+		if (str.startsWith("#") && str.length() == 7) {
+			return new SVGColor(Integer.parseInt(str.substring(1, 3), 16), //
+					Integer.parseInt(str.substring(3, 5), 16), //
+					Integer.parseInt(str.substring(5, 7), 16), //
+					255);
+		}
+		throw new IllegalArgumentException("Unknown color " + str);
 	}
 
 	private final int r, g, b, a;

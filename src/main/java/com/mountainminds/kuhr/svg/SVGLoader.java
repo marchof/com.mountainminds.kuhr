@@ -1,34 +1,46 @@
 package com.mountainminds.kuhr.svg;
 
 import java.awt.Shape;
-import java.awt.geom.Area;
 import java.awt.geom.Path2D;
 import java.awt.geom.Rectangle2D;
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 
 import org.w3c.dom.Node;
+import org.xml.sax.SAXException;
 
-public class SVGLoader {
+class SVGLoader {
 
-	private Area combinedShape = new Area();
-
-	public SVGLoader() {
+	interface ShapeConsumer {
+		void consume(SVGStyles styles, Shape shape);
 	}
 
-	public void load(Path path) throws Exception {
+	private ShapeConsumer consumer;
+
+	public SVGLoader(ShapeConsumer consumer) {
+		this.consumer = consumer;
+	}
+
+	public void load(Path path) throws IOException {
 		try (InputStream in = Files.newInputStream(path)) {
 			load(in);
 		}
 	}
 
-	public void load(InputStream in) throws Exception {
-		DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-		element(builder.parse(in), new SVGStyles());
+	public void load(InputStream in) throws IOException {
+		DocumentBuilder builder;
+		try {
+			builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+			element(builder.parse(in), new SVGStyles());
+		} catch (ParserConfigurationException | SAXException e) {
+			throw new IOException(e);
+		}
 	}
 
 	private void element(Node element, SVGStyles styles) {
@@ -36,13 +48,13 @@ public class SVGLoader {
 			styles.read(element);
 			switch (element.getNodeName()) {
 			case "path":
-				combine(path(element), styles);
+				consumer.consume(styles, path(element));
 				break;
 			case "polygon":
-				combine(polygon(element), styles);
+				consumer.consume(styles, polygon(element));
 				break;
 			case "rect":
-				combine(rect(element), styles);
+				consumer.consume(styles, rect(element));
 				break;
 			}
 		}
@@ -167,25 +179,6 @@ public class SVGLoader {
 		double w = Double.parseDouble(node.getAttributes().getNamedItem("width").getTextContent());
 		double h = Double.parseDouble(node.getAttributes().getNamedItem("height").getTextContent());
 		return new Rectangle2D.Double(x, y, w, h);
-	}
-
-	private void combine(Shape shape, SVGStyles styles) {
-		if (styles.getFill().isBlack()) {
-			combinedShape.add(new Area(shape));
-		}
-		if (styles.getFill().isWhite()) {
-			combinedShape.subtract(new Area(shape));
-		}
-		if (styles.getStroke().isBlack()) {
-			combinedShape.add(new Area(styles.createStroke().createStrokedShape(shape)));
-		}
-		if (styles.getStroke().isWhite()) {
-			combinedShape.subtract(new Area(styles.createStroke().createStrokedShape(shape)));
-		}
-	}
-
-	public Shape getShape() {
-		return combinedShape;
 	}
 
 }

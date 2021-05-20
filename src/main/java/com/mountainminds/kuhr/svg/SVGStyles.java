@@ -2,6 +2,7 @@ package com.mountainminds.kuhr.svg;
 
 import java.awt.BasicStroke;
 import java.awt.Stroke;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -9,6 +10,9 @@ import java.util.function.Function;
 
 import org.w3c.dom.Node;
 
+/**
+ * https://www.w3.org/TR/SVG2/painting.html
+ */
 class SVGStyles {
 
 	private static Map<String, Integer> LINECAPS = Map.of( //
@@ -45,6 +49,11 @@ class SVGStyles {
 
 	public void read(Node node) {
 		Function<String, Optional<String>> attributes = DomReader.attributes(node);
+		attributes.apply("style").ifPresent(style -> read(parseStyle(style)));
+		read(attributes);
+	}
+
+	private void read(Function<String, Optional<String>> attributes) {
 		read(attributes, "fill", SVGColor::of, c -> this.fill = c);
 		read(attributes, "stroke", SVGColor::of, c -> this.stroke = c);
 		read(attributes, "stroke-width", Float::parseFloat, w -> this.strokeWidth = w);
@@ -61,6 +70,17 @@ class SVGStyles {
 			}
 			consumer.accept(value);
 		});
+	}
+
+	private Function<String, Optional<String>> parseStyle(String style) {
+		Map<String, String> defs = new HashMap<>();
+		for (String entry : style.split(";")) {
+			String[] tokens = entry.split(":");
+			if (tokens.length == 2) {
+				defs.put(tokens[0].strip(), tokens[1].strip());
+			}
+		}
+		return a -> Optional.ofNullable(defs.get(a));
 	}
 
 	public SVGColor getFill() {
