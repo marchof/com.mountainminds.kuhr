@@ -51,6 +51,9 @@ public class SVGLoader {
 		}
 	}
 
+	/**
+	 * https://www.w3.org/TR/SVG2/paths.html
+	 */
 	private Shape path(Node node) {
 		SVGPathScanner scanner = new SVGPathScanner(node, "d");
 		double lastX = 0.0, lastY = 0.0, lastBezierX = 0.0, lastBezierY = 0.0;
@@ -58,87 +61,92 @@ public class SVGLoader {
 		Path2D path = new Path2D.Double();
 		while (scanner.hasMoreTokens()) {
 			int command = scanner.nextCommand();
-			switch (command) {
-			case 'M':
-				path.moveTo( //
-						lastX = scanner.nextNumber(), //
-						lastY = scanner.nextNumber());
-				break;
-			case 'm':
-				path.moveTo( //
-						lastX = scanner.nextNumber(lastX), //
-						lastY = scanner.nextNumber(lastY));
-				break;
-			case 'L':
-				path.lineTo( //
-						lastX = scanner.nextNumber(), //
-						lastY = scanner.nextNumber());
-				break;
-			case 'l':
-				path.lineTo( //
-						lastX = scanner.nextNumber(lastX), //
-						lastY = scanner.nextNumber(lastY));
-				break;
-			case 'H':
-				path.lineTo(lastX = scanner.nextNumber(), lastY);
-				break;
-			case 'h':
-				path.lineTo(lastX = scanner.nextNumber(lastX), lastY);
-				break;
-			case 'V':
-				path.lineTo(lastX, lastY = scanner.nextNumber());
-				break;
-			case 'v':
-				path.lineTo(lastX, lastY = scanner.nextNumber(lastY));
-				break;
-			case 'C':
-				path.curveTo( //
-						scanner.nextNumber(), //
-						scanner.nextNumber(), //
-						lastBezierX = scanner.nextNumber(), //
-						lastBezierY = scanner.nextNumber(), //
-						lastX = scanner.nextNumber(), //
-						lastY = scanner.nextNumber());
-				break;
-			case 'c':
-				path.curveTo( //
-						scanner.nextNumber(lastX), //
-						scanner.nextNumber(lastY), //
-						lastBezierX = scanner.nextNumber(lastX), //
-						lastBezierY = scanner.nextNumber(lastY), //
-						lastX = scanner.nextNumber(lastX), //
-						lastY = scanner.nextNumber(lastY));
-				break;
-			case 'S':
-				cX1 = lastBezierX + 2 * (lastX - lastBezierX);
-				cY1 = lastBezierY + 2 * (lastY - lastBezierY);
-				path.curveTo(cX1, cY1, //
-						lastBezierX = scanner.nextNumber(), //
-						lastBezierY = scanner.nextNumber(), //
-						lastX = scanner.nextNumber(), //
-						lastY = scanner.nextNumber());
-				break;
-			case 's':
-				cX1 = lastBezierX + 2 * (lastX - lastBezierX);
-				cY1 = lastBezierY + 2 * (lastY - lastBezierY);
-				path.curveTo(cX1, cY1, //
-						lastBezierX = scanner.nextNumber(lastX), //
-						lastBezierY = scanner.nextNumber(lastY), //
-						lastX = scanner.nextNumber(lastX), //
-						lastY = scanner.nextNumber(lastY));
-				break;
-			case 'Z':
-			case 'z':
-				path.closePath();
-				break;
-			default:
-				throw new IllegalArgumentException("Unsupported Command: " + (char) command + " in "
-						+ node.getAttributes().getNamedItem("d").getTextContent());
-			}
+			do {
+				switch (command) {
+				case 'M':
+					path.moveTo( //
+							lastX = scanner.nextNumber(), //
+							lastY = scanner.nextNumber());
+					break;
+				case 'm':
+					path.moveTo( //
+							lastX = scanner.nextNumber(lastX), //
+							lastY = scanner.nextNumber(lastY));
+					break;
+				case 'L':
+					path.lineTo( //
+							lastX = scanner.nextNumber(), //
+							lastY = scanner.nextNumber());
+					break;
+				case 'l':
+					path.lineTo( //
+							lastX = scanner.nextNumber(lastX), //
+							lastY = scanner.nextNumber(lastY));
+					break;
+				case 'H':
+					path.lineTo(lastX = scanner.nextNumber(), lastY);
+					break;
+				case 'h':
+					path.lineTo(lastX = scanner.nextNumber(lastX), lastY);
+					break;
+				case 'V':
+					path.lineTo(lastX, lastY = scanner.nextNumber());
+					break;
+				case 'v':
+					path.lineTo(lastX, lastY = scanner.nextNumber(lastY));
+					break;
+				case 'C':
+					path.curveTo( //
+							scanner.nextNumber(), //
+							scanner.nextNumber(), //
+							lastBezierX = scanner.nextNumber(), //
+							lastBezierY = scanner.nextNumber(), //
+							lastX = scanner.nextNumber(), //
+							lastY = scanner.nextNumber());
+					break;
+				case 'c':
+					path.curveTo( //
+							scanner.nextNumber(lastX), //
+							scanner.nextNumber(lastY), //
+							lastBezierX = scanner.nextNumber(lastX), //
+							lastBezierY = scanner.nextNumber(lastY), //
+							lastX = scanner.nextNumber(lastX), //
+							lastY = scanner.nextNumber(lastY));
+					break;
+				case 'S':
+					cX1 = lastBezierX + 2 * (lastX - lastBezierX);
+					cY1 = lastBezierY + 2 * (lastY - lastBezierY);
+					path.curveTo(cX1, cY1, //
+							lastBezierX = scanner.nextNumber(), //
+							lastBezierY = scanner.nextNumber(), //
+							lastX = scanner.nextNumber(), //
+							lastY = scanner.nextNumber());
+					break;
+				case 's':
+					cX1 = lastBezierX + 2 * (lastX - lastBezierX);
+					cY1 = lastBezierY + 2 * (lastY - lastBezierY);
+					path.curveTo(cX1, cY1, //
+							lastBezierX = scanner.nextNumber(lastX), //
+							lastBezierY = scanner.nextNumber(lastY), //
+							lastX = scanner.nextNumber(lastX), //
+							lastY = scanner.nextNumber(lastY));
+					break;
+				case 'Z':
+				case 'z':
+					path.closePath();
+					break;
+				default:
+					throw new IllegalArgumentException("Unsupported Command: " + (char) command + " in "
+							+ node.getAttributes().getNamedItem("d").getTextContent());
+				}
+			} while (scanner.nextIsNumber());
 		}
 		return path;
 	}
 
+	/**
+	 * https://www.w3.org/TR/SVG2/shapes.html#PolygonElement
+	 */
 	private Shape polygon(Node node) {
 		SVGPathScanner scanner = new SVGPathScanner(node, "points");
 		Path2D path = new Path2D.Double();
@@ -150,6 +158,9 @@ public class SVGLoader {
 		return path;
 	}
 
+	/**
+	 * https://www.w3.org/TR/SVG2/shapes.html#RectElement
+	 */
 	private Shape rect(Node node) {
 		double x = Double.parseDouble(node.getAttributes().getNamedItem("x").getTextContent());
 		double y = Double.parseDouble(node.getAttributes().getNamedItem("y").getTextContent());

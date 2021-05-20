@@ -6,7 +6,7 @@ import org.w3c.dom.Node;
 
 class SVGPathScanner {
 
-	private String d;
+	private final String d;
 
 	private int pos = 0;
 
@@ -29,6 +29,28 @@ class SVGPathScanner {
 			throw new NoSuchElementException();
 		}
 		return pop();
+	}
+
+	boolean nextIsNumber() {
+		skipWhitespaces();
+		if (pos < d.length()) {
+			switch (d.charAt(pos)) {
+			case '0':
+			case '1':
+			case '2':
+			case '3':
+			case '4':
+			case '5':
+			case '6':
+			case '7':
+			case '8':
+			case '9':
+			case '.':
+			case '-':
+				return true;
+			}
+		}
+		return false;
 	}
 
 	double nextNumber(double rel) {
