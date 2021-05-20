@@ -3,9 +3,10 @@
 Java snippets to create QR codes in customizable designs as SVGs using the
 following libraries:
 
+* JDK's Java 2D APIs to create, combine and adjust vector graphics
+* JDK's XML and Java 2D to parse simple SVG files into shapes
+* [JFreeSVG](https://www.jfree.org/jfreesvg/) to write Java 2D shapes to SVG
 * [ZXing](https://github.com/zxing/zxing) for QR code generation
-* JDK's Java 2D to create, combine and adjust vector graphics
-* [JFreeSVG](https://www.jfree.org/jfreesvg/) to write Java 2D shapes to PNG
 
 This code is for my personal usage and not released as a library. You may simply
 clone or copy it.
