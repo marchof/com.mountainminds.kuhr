@@ -22,17 +22,21 @@ public class SVG {
 
 		@Override
 		public void consume(SVGStyles styles, Shape shape) {
-			if (styles.getFill().isBlack()) {
-				combinedShape.add(new Area(shape));
+			if (styles.isFillOpaque()) {
+				if (styles.getFill().isBlack()) {
+					combinedShape.add(new Area(shape));
+				}
+				if (styles.getFill().isWhite()) {
+					combinedShape.subtract(new Area(shape));
+				}
 			}
-			if (styles.getFill().isWhite()) {
-				combinedShape.subtract(new Area(shape));
-			}
-			if (styles.getStroke().isBlack()) {
-				combinedShape.add(new Area(styles.createStroke().createStrokedShape(shape)));
-			}
-			if (styles.getStroke().isWhite()) {
-				combinedShape.subtract(new Area(styles.createStroke().createStrokedShape(shape)));
+			if (styles.isStrokeOpaque()) {
+				if (styles.getStroke().isBlack()) {
+					combinedShape.add(new Area(styles.createStroke().createStrokedShape(shape)));
+				}
+				if (styles.getStroke().isWhite()) {
+					combinedShape.subtract(new Area(styles.createStroke().createStrokedShape(shape)));
+				}
 			}
 		}
 

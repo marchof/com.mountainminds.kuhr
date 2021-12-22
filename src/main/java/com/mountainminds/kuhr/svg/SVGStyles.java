@@ -26,14 +26,18 @@ class SVGStyles {
 			"round", BasicStroke.JOIN_ROUND);
 
 	private SVGColor fill;
+	private float fillOpacity;
 	private SVGColor stroke;
+	private float strokeOpacity;
 	private float strokeWidth;
 	private int strokeLinecap;
 	private int strokeLinejoin;
 
 	public SVGStyles() {
 		this.fill = SVGColor.BLACK;
+		this.fillOpacity = 1.0f;
 		this.stroke = SVGColor.NONE;
+		this.strokeOpacity = 1.0f;
 		this.strokeWidth = 1.0f;
 		this.strokeLinecap = BasicStroke.CAP_BUTT;
 		this.strokeLinejoin = BasicStroke.JOIN_MITER;
@@ -41,7 +45,9 @@ class SVGStyles {
 
 	public SVGStyles(SVGStyles parent) {
 		this.fill = parent.fill;
+		this.fillOpacity = parent.fillOpacity;
 		this.stroke = parent.stroke;
+		this.strokeOpacity = parent.strokeOpacity;
 		this.strokeWidth = parent.strokeWidth;
 		this.strokeLinecap = parent.strokeLinecap;
 		this.strokeLinejoin = parent.strokeLinejoin;
@@ -55,7 +61,9 @@ class SVGStyles {
 
 	private void read(Function<String, Optional<String>> attributes) {
 		read(attributes, "fill", SVGColor::of, c -> this.fill = c);
+		read(attributes, "fill-opacity", Float::parseFloat, o -> this.fillOpacity = o);
 		read(attributes, "stroke", SVGColor::of, c -> this.stroke = c);
+		read(attributes, "stroke-opacity", Float::parseFloat, o -> this.strokeOpacity = o);
 		read(attributes, "stroke-width", Float::parseFloat, w -> this.strokeWidth = w);
 		read(attributes, "stroke-linecap", LINECAPS::get, c -> this.strokeLinecap = c);
 		read(attributes, "stroke-linejoin", LINEJOINS::get, j -> this.strokeLinejoin = j);
@@ -87,8 +95,16 @@ class SVGStyles {
 		return fill;
 	}
 
+	public boolean isFillOpaque() {
+		return fillOpacity > 0.5;
+	}
+
 	public SVGColor getStroke() {
 		return stroke;
+	}
+
+	public boolean isStrokeOpaque() {
+		return strokeOpacity > 0.5;
 	}
 
 	public Stroke createStroke() {
