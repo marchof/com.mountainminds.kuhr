@@ -32,7 +32,8 @@ public class QRMatrix {
 		this.content = content.toString();
 		Map<EncodeHintType, ?> hints = Map.of( //
 				EncodeHintType.ERROR_CORRECTION, level, //
-				EncodeHintType.MARGIN, 0);
+				EncodeHintType.MARGIN, 0, //
+				EncodeHintType.CHARACTER_SET, "UTF-8");
 		Writer writer = new MultiFormatWriter();
 		matrix = writer.encode(content.toString(), BarcodeFormat.QR_CODE, 1, 1, hints);
 		positions = List.of( //
@@ -74,7 +75,11 @@ public class QRMatrix {
 	}
 
 	public void addCenteredLogo(int size) {
-		addLogo(new Rectangle((matrix.getWidth() - size) / 2, (matrix.getHeight() - size) / 2, size, size));
+		addCenteredLogo(size, size);
+	}
+
+	public void addCenteredLogo(int width, int height) {
+		addLogo(new Rectangle((matrix.getWidth() - width) / 2, (matrix.getHeight() - height) / 2, width, height));
 	}
 
 	public void addLogo(Rectangle logo) {
