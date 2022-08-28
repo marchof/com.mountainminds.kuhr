@@ -7,6 +7,8 @@ import java.awt.geom.Area;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.geom.RoundRectangle2D;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -16,11 +18,13 @@ public class QRShape {
 
 	private QRMatrix matrix;
 
-	private Supplier<Shape> posShape = position(0.0, 0.0, 0.0);
+	private Supplier<Shape> posShape = position();
 
 	private Supplier<Shape> dotShape = square();
 
 	private Function<Shape, Shape> dotTransformation = Function.identity();
+
+	private BiConsumer<BitMatrix, Consumer<Shape>> extraMatrixShapes;
 
 	private Shape logo = null;
 
@@ -36,6 +40,10 @@ public class QRShape {
 
 	public void setPosShape(Supplier<Shape> posShape) {
 		this.posShape = posShape;
+	}
+
+	public void setExtraMatrixShapes(BiConsumer<BitMatrix, Consumer<Shape>> extraMatrixShapes) {
+		this.extraMatrixShapes = extraMatrixShapes;
 	}
 
 	public void setDotTransformation(Function<Shape, Shape> dotTransformation) {
@@ -59,6 +67,10 @@ public class QRShape {
 				}
 			}
 		}
+		if (extraMatrixShapes != null) {
+			final Area a = area;
+			extraMatrixShapes.accept(m, s -> a.add(new Area(s)));
+		}
 		area = new Area(dotTransformation.apply(area));
 		for (Rectangle pos : matrix.getPositions()) {
 			Area a = new Area(posShape.get());
@@ -80,22 +92,35 @@ public class QRShape {
 		return area;
 	}
 
+	public static Supplier<Shape> position() {
+		return position(0.0, 0.0, 0.0);
+	}
+
 	public static Supplier<Shape> position(double r1, double r2, double r3) {
+		return position(1.0, r1, r2, r3);
+	}
+
+	public static Supplier<Shape> position(double width, double r1, double r2, double r3) {
 		return () -> {
 			Area pos = new Area();
-			pos.add(new Area(new RoundRectangle2D.Double(0, 0, 7, 7, r1, r1)));
-			pos.subtract(new Area(new RoundRectangle2D.Double(1, 1, 5, 5, r2, r2)));
-			pos.add(new Area(new RoundRectangle2D.Double(2, 2, 3, 3, r3, r3)));
+			double w2 = width / 2.0;
+			pos.add(new Area(new RoundRectangle2D.Double(0.5 - w2, 0, 6.0 + width, 6.0 + width, r1, r1)));
+			pos.subtract(new Area(new RoundRectangle2D.Double(0.5 + w2, width, 6.0 - width, 6.0 - width, r2, r2)));
+			pos.add(new Area(new RoundRectangle2D.Double(2.5 - w2, 2, 2.0 + width, 2.0 + width, r3, r3)));
 			return pos;
 		};
 	}
 
-	public static Supplier<Shape> square() {
-		return square(1);
+	public static Supplier<Shape> rectangle(double width, double height) {
+		return () -> new Rectangle2D.Double(0, 0, width, height);
 	}
 
 	public static Supplier<Shape> square(double size) {
-		return () -> new Rectangle2D.Double(0, 0, size, size);
+		return rectangle(size, size);
+	}
+
+	public static Supplier<Shape> square() {
+		return square(1);
 	}
 
 	public static Supplier<Shape> circle(double size) {
