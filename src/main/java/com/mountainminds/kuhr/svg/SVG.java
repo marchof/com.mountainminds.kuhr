@@ -3,11 +3,19 @@ package com.mountainminds.kuhr.svg;
 import java.awt.Shape;
 import java.awt.geom.Area;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Path;
 
 import com.mountainminds.kuhr.svg.SVGLoader.ShapeConsumer;
 
 public class SVG {
+
+	public static Shape toShape(InputStream in) throws IOException {
+		ShapeCombiner combiner = new ShapeCombiner();
+		SVGLoader svgloader = new SVGLoader(combiner);
+		svgloader.load(in);
+		return combiner.getShape();
+	}
 
 	public static Shape toShape(Path path) throws IOException {
 		ShapeCombiner combiner = new ShapeCombiner();
