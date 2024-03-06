@@ -77,35 +77,43 @@ class SVGLoader {
 				switch (command) {
 				case 'M':
 					path.moveTo( //
-							lastX = scanner.nextNumber(), //
-							lastY = scanner.nextNumber());
+							lastX = lastBezierX = scanner.nextNumber(), //
+							lastY = lastBezierY = scanner.nextNumber());
 					break;
 				case 'm':
 					path.moveTo( //
-							lastX = scanner.nextNumber(lastX), //
-							lastY = scanner.nextNumber(lastY));
+							lastX = lastBezierX = scanner.nextNumber(lastX), //
+							lastY = lastBezierY = scanner.nextNumber(lastY));
 					break;
 				case 'L':
 					path.lineTo( //
-							lastX = scanner.nextNumber(), //
-							lastY = scanner.nextNumber());
+							lastX = lastBezierX = scanner.nextNumber(), //
+							lastY = lastBezierY = scanner.nextNumber());
 					break;
 				case 'l':
 					path.lineTo( //
-							lastX = scanner.nextNumber(lastX), //
-							lastY = scanner.nextNumber(lastY));
+							lastX = lastBezierX = scanner.nextNumber(lastX), //
+							lastY = lastBezierY = scanner.nextNumber(lastY));
 					break;
 				case 'H':
-					path.lineTo(lastX = scanner.nextNumber(), lastY);
+					path.lineTo( //
+							lastX = lastBezierX = scanner.nextNumber(), //
+							lastY);
 					break;
 				case 'h':
-					path.lineTo(lastX = scanner.nextNumber(lastX), lastY);
+					path.lineTo( //
+							lastX = lastBezierX = scanner.nextNumber(lastX), //
+							lastY);
 					break;
 				case 'V':
-					path.lineTo(lastX, lastY = scanner.nextNumber());
+					path.lineTo( //
+							lastX, //
+							lastY = lastBezierY = scanner.nextNumber());
 					break;
 				case 'v':
-					path.lineTo(lastX, lastY = scanner.nextNumber(lastY));
+					path.lineTo( //
+							lastX, //
+							lastY = lastBezierY = scanner.nextNumber(lastY));
 					break;
 				case 'C':
 					path.curveTo( //
