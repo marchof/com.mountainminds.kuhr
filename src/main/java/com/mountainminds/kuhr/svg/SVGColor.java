@@ -20,6 +20,12 @@ class SVGColor {
 		if (c != null) {
 			return c;
 		}
+		if (str.startsWith("#") && str.length() == 4) {
+			int r = Integer.parseInt(str.substring(1, 2), 16);
+			int g = Integer.parseInt(str.substring(2, 3), 16);
+			int b = Integer.parseInt(str.substring(3, 4), 16);
+			return new SVGColor(r + 16 * r, g + 16 * g, b + 16 * b, 255);
+		}
 		if (str.startsWith("#") && str.length() == 7) {
 			return new SVGColor(Integer.parseInt(str.substring(1, 3), 16), //
 					Integer.parseInt(str.substring(3, 5), 16), //
@@ -44,6 +50,11 @@ class SVGColor {
 
 	public boolean isWhite() {
 		return r >= 128 & g >= 128 & b >= 128 & a >= 128;
+	}
+
+	@Override
+	public String toString() {
+		return "SVGColor[%s, %s, %s, %s]".formatted(r, g, b, a);
 	}
 
 }
