@@ -154,6 +154,9 @@ class SVGLoader {
 				case 'Z':
 				case 'z':
 					path.closePath();
+					var cp = path.getCurrentPoint();
+					lastX = lastBezierX = cp.getX();
+					lastY = lastBezierY = cp.getY();
 					break;
 				default:
 					throw new IllegalArgumentException("Unsupported Command: " + (char) command + " in "
