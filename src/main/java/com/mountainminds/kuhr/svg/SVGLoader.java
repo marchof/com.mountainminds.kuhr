@@ -151,6 +151,38 @@ class SVGLoader {
 							lastX = scanner.nextNumber(lastX), //
 							lastY = scanner.nextNumber(lastY));
 					break;
+				case 'Q':
+					path.quadTo( //
+							lastBezierX = scanner.nextNumber(), //
+							lastBezierY = scanner.nextNumber(), //
+							lastX = scanner.nextNumber(), //
+							lastY = scanner.nextNumber());
+					break;
+				case 'q':
+					path.quadTo( //
+							lastBezierX = scanner.nextNumber(lastX), //
+							lastBezierY = scanner.nextNumber(lastY), //
+							lastX = scanner.nextNumber(lastX), //
+							lastY = scanner.nextNumber(lastY));
+					break;
+				case 'T':
+					cX1 = lastBezierX + 2 * (lastX - lastBezierX);
+					cY1 = lastBezierY + 2 * (lastY - lastBezierY);
+					path.quadTo( //
+							lastBezierX = cX1, //
+							lastBezierY = cY1, //
+							lastX = scanner.nextNumber(), //
+							lastY = scanner.nextNumber());
+					break;
+				case 't':
+					cX1 = lastBezierX + 2 * (lastX - lastBezierX);
+					cY1 = lastBezierY + 2 * (lastY - lastBezierY);
+					path.quadTo( //
+							lastBezierX = cX1, //
+							lastBezierY = cY1, //
+							lastX = scanner.nextNumber(lastX), //
+							lastY = scanner.nextNumber(lastY));
+					break;
 				case 'Z':
 				case 'z':
 					path.closePath();
