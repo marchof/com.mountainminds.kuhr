@@ -217,11 +217,13 @@ class SVGLoader {
 		SVGPathScanner scanner = new SVGPathScanner(node, "points");
 		Path2D path = new Path2D.Double();
 		path.setWindingRule(getWindingRule(node));
-		path.moveTo(scanner.nextNumber(), scanner.nextNumber());
-		while (scanner.hasMoreTokens()) {
-			path.lineTo(scanner.nextNumber(), scanner.nextNumber());
+		if (scanner.hasMoreTokens()) {
+			path.moveTo(scanner.nextNumber(), scanner.nextNumber());
+			while (scanner.hasMoreTokens()) {
+				path.lineTo(scanner.nextNumber(), scanner.nextNumber());
+			}
+			path.closePath();
 		}
-		path.closePath();
 		return path;
 	}
 
