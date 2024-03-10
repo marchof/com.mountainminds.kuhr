@@ -71,6 +71,7 @@ class SVGLoader {
 		double lastX = 0.0, lastY = 0.0, lastBezierX = 0.0, lastBezierY = 0.0;
 		double cX1, cY1;
 		Path2D path = new Path2D.Double();
+		path.setWindingRule(getWindingRule(node));
 		while (scanner.hasMoreTokens()) {
 			int command = scanner.nextCommand();
 			do {
@@ -205,6 +206,7 @@ class SVGLoader {
 	private Shape polygon(Node node) {
 		SVGPathScanner scanner = new SVGPathScanner(node, "points");
 		Path2D path = new Path2D.Double();
+		path.setWindingRule(getWindingRule(node));
 		path.moveTo(scanner.nextNumber(), scanner.nextNumber());
 		while (scanner.hasMoreTokens()) {
 			path.lineTo(scanner.nextNumber(), scanner.nextNumber());
@@ -222,6 +224,21 @@ class SVGLoader {
 		double w = Double.parseDouble(node.getAttributes().getNamedItem("width").getTextContent());
 		double h = Double.parseDouble(node.getAttributes().getNamedItem("height").getTextContent());
 		return new Rectangle2D.Double(x, y, w, h);
+	}
+
+	private int getWindingRule(Node node) {
+		var attr = node.getAttributes().getNamedItem("fill-rule");
+		if (attr == null) {
+			return Path2D.WIND_NON_ZERO;
+		}
+		var text = attr.getTextContent();
+		switch (text) {
+		case "nonzero":
+			return Path2D.WIND_NON_ZERO;
+		case "evenodd":
+			return Path2D.WIND_EVEN_ODD;
+		}
+		throw new IllegalArgumentException("Unknown fill-rule: " + text);
 	}
 
 }
