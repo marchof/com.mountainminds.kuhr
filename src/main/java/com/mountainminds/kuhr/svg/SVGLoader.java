@@ -74,17 +74,26 @@ class SVGLoader {
 		path.setWindingRule(getWindingRule(node));
 		while (scanner.hasMoreTokens()) {
 			int command = scanner.nextCommand();
+			boolean first = true;
 			do {
 				switch (command) {
 				case 'M':
-					path.moveTo( //
-							lastX = lastBezierX = scanner.nextNumber(), //
-							lastY = lastBezierY = scanner.nextNumber());
+					lastX = lastBezierX = scanner.nextNumber();
+					lastY = lastBezierY = scanner.nextNumber();
+					if (first) {
+						path.moveTo(lastX, lastY);
+					} else {
+						path.lineTo(lastX, lastY);
+					}
 					break;
 				case 'm':
-					path.moveTo( //
-							lastX = lastBezierX = scanner.nextNumber(lastX), //
-							lastY = lastBezierY = scanner.nextNumber(lastY));
+					lastX = lastBezierX = scanner.nextNumber(lastX);
+					lastY = lastBezierY = scanner.nextNumber(lastY);
+					if (first) {
+						path.moveTo(lastX, lastY);
+					} else {
+						path.lineTo(lastX, lastY);
+					}
 					break;
 				case 'L':
 					path.lineTo( //
@@ -195,6 +204,7 @@ class SVGLoader {
 					throw new IllegalArgumentException("Unsupported Command: " + (char) command + " in "
 							+ node.getAttributes().getNamedItem("d").getTextContent());
 				}
+				first = false;
 			} while (scanner.nextIsNumber());
 		}
 		return path;
