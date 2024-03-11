@@ -2,9 +2,12 @@ package com.mountainminds.kuhr.svg;
 
 import java.awt.Shape;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.Area;
+import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
 import java.awt.geom.Path2D;
 import java.awt.geom.Rectangle2D;
+import java.awt.geom.RoundRectangle2D;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -64,6 +67,9 @@ class SVGLoader {
 				break;
 			case "polyline":
 				consumer.consume(styles, transform.getTransform(), polyline(element));
+				break;
+			case "circle":
+				consumer.consume(styles, transform.getTransform(), circle(element));
 				break;
 			}
 		}
@@ -244,7 +250,21 @@ class SVGLoader {
 		double y = DomReader.doubleAttr(node, "y", 0);
 		double w = DomReader.doubleAttr(node, "width");
 		double h = DomReader.doubleAttr(node, "height");
-		return new Rectangle2D.Double(x, y, w, h);
+		double rx = DomReader.doubleAttr(node, "rx", -1);
+		double ry = DomReader.doubleAttr(node, "ry", -1);
+		if (rx != -1 && ry == -1) {
+			ry = rx;
+		}
+		if (rx == -1 && ry != -1) {
+			rx = ry;
+		}
+		rx = Math.max(0, rx);
+		ry = Math.max(0, ry);
+		if (rx > 0 || ry > 0) {
+			return new RoundRectangle2D.Double(x, y, w, h, rx * 2, ry * 2);
+		} else {
+			return new Rectangle2D.Double(x, y, w, h);
+		}
 	}
 
 	/**
@@ -271,6 +291,19 @@ class SVGLoader {
 			}
 		}
 		return path;
+	}
+
+	/**
+	 * https://www.w3.org/TR/SVGTiny12/shapes.html#CircleElement
+	 */
+	private Shape circle(Node node) {
+		double cx = DomReader.doubleAttr(node, "cx", 0);
+		double cy = DomReader.doubleAttr(node, "cy", 0);
+		double r = DomReader.doubleAttr(node, "r", 0);
+		if (r == 0) {
+			return new Area();
+		}
+		return new Ellipse2D.Double(cx - r, cy - r, r * 2, r * 2);
 	}
 
 	private int getWindingRule(Node node) {
