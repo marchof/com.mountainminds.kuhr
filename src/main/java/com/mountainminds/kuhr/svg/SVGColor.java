@@ -1,27 +1,32 @@
 package com.mountainminds.kuhr.svg;
 
 import java.awt.Color;
+import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 
 class SVGColor {
 
-	public static final SVGColor NONE = new SVGColor(0, 0, 0, 0);
+	private static final Map<String, SVGColor> NAMED_COLORS = new HashMap<>();
 
-	public static final SVGColor BLACK = new SVGColor(0, 0, 0, 255);
+	static {
+		var p = new Properties();
+		try (var in = SVGColor.class.getResourceAsStream("namedcolors.properties")) {
+			p.load(in);
+		} catch (IOException e) {
+			throw new AssertionError("Can't load named colors", e);
+		}
+		p.forEach((name, color) -> NAMED_COLORS.put(name.toString(), of(color.toString())));
+		NAMED_COLORS.put("none", new SVGColor(0, 0, 0, 0));
+	}
 
-	public static final SVGColor WHITE = new SVGColor(255, 255, 255, 255);
+	public static final SVGColor NONE = of("none");
 
-	private static final Map<String, SVGColor> NAMED_COLORS = Map.of( //
-			"none", NONE, //
-			"black", BLACK, //
-			"white", WHITE, //
-			"blue", new SVGColor(0x00, 0x00, 0xff, 0xff), //
-			"green", new SVGColor(0x00, 0x80, 0x00, 0xff), //
-			"purple", new SVGColor(0x80, 0x00, 0x80, 0xff), //
-			"red", new SVGColor(0xff, 0x00, 0x00, 0xff));
+	public static final SVGColor BLACK = of("black");
 
 	public static SVGColor of(String str) {
-		SVGColor c = NAMED_COLORS.get(str);
+		SVGColor c = NAMED_COLORS.get(str.toLowerCase());
 		if (c != null) {
 			return c;
 		}
