@@ -62,6 +62,9 @@ class SVGLoader {
 			case "line":
 				consumer.consume(styles, transform.getTransform(), line(element));
 				break;
+			case "polyline":
+				consumer.consume(styles, transform.getTransform(), polyline(element));
+				break;
 			}
 		}
 		for (Node child : DomReader.children(element)) {
@@ -253,6 +256,21 @@ class SVGLoader {
 		double x2 = DomReader.doubleAttr(node, "x2", 0);
 		double y2 = DomReader.doubleAttr(node, "y2", 0);
 		return new Line2D.Double(x1, y1, x2, y2);
+	}
+
+	/**
+	 * https://www.w3.org/TR/SVGTiny12/shapes.html#PolylineElement
+	 */
+	private Shape polyline(Node node) {
+		SVGPathScanner scanner = new SVGPathScanner(DomReader.attr(node, "points", ""));
+		Path2D path = new Path2D.Double();
+		if (scanner.hasMoreTokens()) {
+			path.moveTo(scanner.nextNumber(), scanner.nextNumber());
+			while (scanner.hasMoreTokens()) {
+				path.lineTo(scanner.nextNumber(), scanner.nextNumber());
+			}
+		}
+		return path;
 	}
 
 	private int getWindingRule(Node node) {

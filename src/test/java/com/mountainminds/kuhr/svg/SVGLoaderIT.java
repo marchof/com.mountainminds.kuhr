@@ -48,6 +48,8 @@ public class SVGLoaderIT {
 			"shapes-line-02-t", //
 			"shapes-polygon-01-t", //
 			// "shapes-polygon-02-t", // contains expected error
+			"shapes-polyline-01-t", //
+			// "shapes-polyline-02-t", // contains expected error
 			"shapes-rect-01-t", //
 			"shapes-rect-02-t", //
 			"shapes-rect-03-t" //
