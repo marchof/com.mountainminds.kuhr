@@ -33,7 +33,7 @@ class SVGStyles {
 	private int strokeLinecap;
 	private int strokeLinejoin;
 
-	public SVGStyles() {
+	SVGStyles() {
 		this.fill = SVGColor.BLACK;
 		this.fillOpacity = 1.0f;
 		this.stroke = SVGColor.NONE;
@@ -43,7 +43,7 @@ class SVGStyles {
 		this.strokeLinejoin = BasicStroke.JOIN_MITER;
 	}
 
-	public SVGStyles(SVGStyles parent) {
+	private SVGStyles(SVGStyles parent) {
 		this.fill = parent.fill;
 		this.fillOpacity = parent.fillOpacity;
 		this.stroke = parent.stroke;
@@ -53,9 +53,11 @@ class SVGStyles {
 		this.strokeLinejoin = parent.strokeLinejoin;
 	}
 
-	public void read(Node node) {
-		parseStyle(DomReader.attr(node, "style", ""));
-		read(DomReader.attributes(node));
+	SVGStyles with(Node node) {
+		var s = new SVGStyles(this);
+		s.parseStyle(DomReader.attr(node, "style", ""));
+		s.read(DomReader.attributes(node));
+		return s;
 	}
 
 	private void read(Function<String, Optional<String>> attributes) {
@@ -90,23 +92,23 @@ class SVGStyles {
 		return a -> Optional.ofNullable(defs.get(a));
 	}
 
-	public SVGColor getFill() {
+	SVGColor getFill() {
 		return fill;
 	}
 
-	public boolean isFillOpaque() {
+	boolean isFillOpaque() {
 		return fillOpacity > 0.5;
 	}
 
-	public SVGColor getStroke() {
+	SVGColor getStroke() {
 		return stroke;
 	}
 
-	public boolean isStrokeOpaque() {
+	boolean isStrokeOpaque() {
 		return strokeOpacity > 0.5;
 	}
 
-	public Stroke createStroke() {
+	Stroke createStroke() {
 		return new BasicStroke(strokeWidth, strokeLinecap, strokeLinejoin);
 	}
 

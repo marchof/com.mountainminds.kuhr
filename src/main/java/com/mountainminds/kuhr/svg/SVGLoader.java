@@ -46,7 +46,7 @@ class SVGLoader {
 
 	private void element(Node element, SVGStyles styles, SVGTransform transform) {
 		if (element.getNodeType() == Node.ELEMENT_NODE) {
-			styles.read(element);
+			styles = styles.with(element);
 			transform = transform.with(element);
 			switch (element.getNodeName()) {
 			case "path":
@@ -61,7 +61,7 @@ class SVGLoader {
 			}
 		}
 		for (Node child : DomReader.children(element)) {
-			element(child, new SVGStyles(styles), transform);
+			element(child, styles, transform);
 		}
 	}
 
