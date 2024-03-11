@@ -1,5 +1,6 @@
 package com.mountainminds.kuhr.svg;
 
+import java.awt.Color;
 import java.util.Map;
 
 class SVGColor {
@@ -13,7 +14,11 @@ class SVGColor {
 	private static final Map<String, SVGColor> NAMED_COLORS = Map.of( //
 			"none", NONE, //
 			"black", BLACK, //
-			"white", WHITE);
+			"white", WHITE, //
+			"blue", new SVGColor(0x00, 0x00, 0xff, 0xff), //
+			"green", new SVGColor(0x00, 0x80, 0x00, 0xff), //
+			"purple", new SVGColor(0x80, 0x00, 0x80, 0xff), //
+			"red", new SVGColor(0xff, 0x00, 0x00, 0xff));
 
 	public static SVGColor of(String str) {
 		SVGColor c = NAMED_COLORS.get(str);
@@ -50,6 +55,10 @@ class SVGColor {
 
 	public boolean isWhite() {
 		return r >= 128 & g >= 128 & b >= 128 & a >= 128;
+	}
+
+	Color toAWT() {
+		return new Color(r, g, b, a);
 	}
 
 	@Override
