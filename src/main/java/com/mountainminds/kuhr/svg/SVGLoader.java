@@ -2,6 +2,7 @@ package com.mountainminds.kuhr.svg;
 
 import java.awt.Shape;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.Line2D;
 import java.awt.geom.Path2D;
 import java.awt.geom.Rectangle2D;
 import java.io.IOException;
@@ -57,6 +58,9 @@ class SVGLoader {
 				break;
 			case "rect":
 				consumer.consume(styles, transform.getTransform(), rect(element));
+				break;
+			case "line":
+				consumer.consume(styles, transform.getTransform(), line(element));
 				break;
 			}
 		}
@@ -238,6 +242,17 @@ class SVGLoader {
 		double w = DomReader.doubleAttr(node, "width");
 		double h = DomReader.doubleAttr(node, "height");
 		return new Rectangle2D.Double(x, y, w, h);
+	}
+
+	/**
+	 * https://www.w3.org/TR/SVG2/shapes.html#LineElement
+	 */
+	private Shape line(Node node) {
+		double x1 = DomReader.doubleAttr(node, "x1", 0);
+		double y1 = DomReader.doubleAttr(node, "y1", 0);
+		double x2 = DomReader.doubleAttr(node, "x2", 0);
+		double y2 = DomReader.doubleAttr(node, "y2", 0);
+		return new Line2D.Double(x1, y1, x2, y2);
 	}
 
 	private int getWindingRule(Node node) {

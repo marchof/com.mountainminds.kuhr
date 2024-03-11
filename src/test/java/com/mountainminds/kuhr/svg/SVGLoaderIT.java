@@ -44,6 +44,8 @@ public class SVGLoaderIT {
 			"paths-data-13-t", //
 			"paths-data-14-t", //
 			"paths-data-15-t", //
+			"shapes-line-01-t", //
+			"shapes-line-02-t", //
 			"shapes-polygon-01-t", //
 			// "shapes-polygon-02-t", // contains expected error
 			"shapes-rect-01-t", //
