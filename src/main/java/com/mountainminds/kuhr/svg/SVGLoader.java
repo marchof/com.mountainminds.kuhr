@@ -67,7 +67,8 @@ class SVGLoader {
 	 * https://www.w3.org/TR/SVG2/paths.html
 	 */
 	private Shape path(Node node) {
-		SVGPathScanner scanner = new SVGPathScanner(node, "d");
+		String d = DomReader.attr(node, "d", "");
+		SVGPathScanner scanner = new SVGPathScanner(d);
 		double lastX = 0.0, lastY = 0.0, lastBezierX = 0.0, lastBezierY = 0.0;
 		double cX1, cY1;
 		Path2D path = new Path2D.Double();
@@ -201,8 +202,7 @@ class SVGLoader {
 					lastY = lastBezierY = cp.getY();
 					break;
 				default:
-					throw new IllegalArgumentException("Unsupported Command: " + (char) command + " in "
-							+ node.getAttributes().getNamedItem("d").getTextContent());
+					throw new IllegalArgumentException("Unsupported Command: %s in %s".formatted((char) command, d));
 				}
 				first = false;
 			} while (scanner.nextIsNumber());
@@ -214,7 +214,7 @@ class SVGLoader {
 	 * https://www.w3.org/TR/SVG2/shapes.html#PolygonElement
 	 */
 	private Shape polygon(Node node) {
-		SVGPathScanner scanner = new SVGPathScanner(node, "points");
+		SVGPathScanner scanner = new SVGPathScanner(DomReader.attr(node, "points", ""));
 		Path2D path = new Path2D.Double();
 		path.setWindingRule(getWindingRule(node));
 		if (scanner.hasMoreTokens()) {
@@ -231,19 +231,15 @@ class SVGLoader {
 	 * https://www.w3.org/TR/SVG2/shapes.html#RectElement
 	 */
 	private Shape rect(Node node) {
-		double x = Double.parseDouble(node.getAttributes().getNamedItem("x").getTextContent());
-		double y = Double.parseDouble(node.getAttributes().getNamedItem("y").getTextContent());
-		double w = Double.parseDouble(node.getAttributes().getNamedItem("width").getTextContent());
-		double h = Double.parseDouble(node.getAttributes().getNamedItem("height").getTextContent());
+		double x = DomReader.doubleAttr(node, "x", 0);
+		double y = DomReader.doubleAttr(node, "y", 0);
+		double w = DomReader.doubleAttr(node, "width");
+		double h = DomReader.doubleAttr(node, "height");
 		return new Rectangle2D.Double(x, y, w, h);
 	}
 
 	private int getWindingRule(Node node) {
-		var attr = node.getAttributes().getNamedItem("fill-rule");
-		if (attr == null) {
-			return Path2D.WIND_NON_ZERO;
-		}
-		var text = attr.getTextContent();
+		String text = DomReader.attr(node, "fill-rule", "nonzero");
 		switch (text) {
 		case "nonzero":
 			return Path2D.WIND_NON_ZERO;

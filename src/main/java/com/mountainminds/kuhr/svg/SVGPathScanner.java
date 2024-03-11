@@ -2,8 +2,6 @@ package com.mountainminds.kuhr.svg;
 
 import java.util.NoSuchElementException;
 
-import org.w3c.dom.Node;
-
 class SVGPathScanner {
 
 	private final String d;
@@ -12,11 +10,6 @@ class SVGPathScanner {
 
 	SVGPathScanner(String d) {
 		this.d = d;
-	}
-
-	SVGPathScanner(Node node, String attr) {
-		Node item = node.getAttributes().getNamedItem(attr);
-		this.d = item == null ? "" : item.getTextContent();
 	}
 
 	boolean hasMoreTokens() {

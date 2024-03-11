@@ -54,9 +54,8 @@ class SVGStyles {
 	}
 
 	public void read(Node node) {
-		Function<String, Optional<String>> attributes = DomReader.attributes(node);
-		attributes.apply("style").ifPresent(style -> read(parseStyle(style)));
-		read(attributes);
+		parseStyle(DomReader.attr(node, "style", ""));
+		read(DomReader.attributes(node));
 	}
 
 	private void read(Function<String, Optional<String>> attributes) {
