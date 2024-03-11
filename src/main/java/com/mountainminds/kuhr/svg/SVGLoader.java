@@ -1,6 +1,7 @@
 package com.mountainminds.kuhr.svg;
 
 import java.awt.Shape;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Path2D;
 import java.awt.geom.Rectangle2D;
 import java.io.IOException;
@@ -18,7 +19,7 @@ import org.xml.sax.SAXException;
 class SVGLoader {
 
 	interface ShapeConsumer {
-		void consume(SVGStyles styles, Shape shape);
+		void consume(SVGStyles styles, AffineTransform transform, Shape shape);
 	}
 
 	private ShapeConsumer consumer;
@@ -37,29 +38,30 @@ class SVGLoader {
 		DocumentBuilder builder;
 		try {
 			builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-			element(builder.parse(in), new SVGStyles());
+			element(builder.parse(in), new SVGStyles(), new SVGTransform());
 		} catch (ParserConfigurationException | SAXException e) {
 			throw new IOException(e);
 		}
 	}
 
-	private void element(Node element, SVGStyles styles) {
+	private void element(Node element, SVGStyles styles, SVGTransform transform) {
 		if (element.getNodeType() == Node.ELEMENT_NODE) {
 			styles.read(element);
+			transform = transform.with(element);
 			switch (element.getNodeName()) {
 			case "path":
-				consumer.consume(styles, path(element));
+				consumer.consume(styles, transform.getTransform(), path(element));
 				break;
 			case "polygon":
-				consumer.consume(styles, polygon(element));
+				consumer.consume(styles, transform.getTransform(), polygon(element));
 				break;
 			case "rect":
-				consumer.consume(styles, rect(element));
+				consumer.consume(styles, transform.getTransform(), rect(element));
 				break;
 			}
 		}
 		for (Node child : DomReader.children(element)) {
-			element(child, new SVGStyles(styles));
+			element(child, new SVGStyles(styles), transform);
 		}
 	}
 

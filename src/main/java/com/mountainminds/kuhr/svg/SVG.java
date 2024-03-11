@@ -1,6 +1,7 @@
 package com.mountainminds.kuhr.svg;
 
 import java.awt.Shape;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Area;
 import java.io.IOException;
 import java.io.InputStream;
@@ -29,21 +30,25 @@ public class SVG {
 		private Area combinedShape = new Area();
 
 		@Override
-		public void consume(SVGStyles styles, Shape shape) {
+		public void consume(SVGStyles styles, AffineTransform transform, Shape shape) {
 			if (styles.isFillOpaque()) {
+				var fillArea = new Area(shape);
+				fillArea.transform(transform);
 				if (styles.getFill().isBlack()) {
-					combinedShape.add(new Area(shape));
+					combinedShape.add(fillArea);
 				}
 				if (styles.getFill().isWhite()) {
-					combinedShape.subtract(new Area(shape));
+					combinedShape.subtract(fillArea);
 				}
 			}
 			if (styles.isStrokeOpaque()) {
+				var strokeArea = new Area(styles.createStroke().createStrokedShape(shape));
+				strokeArea.transform(transform);
 				if (styles.getStroke().isBlack()) {
-					combinedShape.add(new Area(styles.createStroke().createStrokedShape(shape)));
+					combinedShape.add(strokeArea);
 				}
 				if (styles.getStroke().isWhite()) {
-					combinedShape.subtract(new Area(styles.createStroke().createStrokedShape(shape)));
+					combinedShape.subtract(strokeArea);
 				}
 			}
 		}

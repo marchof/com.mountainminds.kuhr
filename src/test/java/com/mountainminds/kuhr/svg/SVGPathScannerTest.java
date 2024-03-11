@@ -2,11 +2,11 @@ package com.mountainminds.kuhr.svg;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.NoSuchElementException;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 public class SVGPathScannerTest {
@@ -86,8 +86,8 @@ public class SVGPathScannerTest {
 		scanner = new SVGPathScanner("   ");
 		assertFalse(scanner.hasMoreTokens());
 		assertFalse(scanner.nextIsNumber());
-		Assertions.assertThrows(NoSuchElementException.class, () -> scanner.nextCommand());
-		Assertions.assertThrows(NoSuchElementException.class, () -> scanner.nextNumber());
+		assertThrows(NoSuchElementException.class, () -> scanner.nextCommand());
+		assertThrows(NoSuchElementException.class, () -> scanner.nextNumber());
 	}
 
 	@Test
