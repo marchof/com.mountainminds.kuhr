@@ -1,8 +1,10 @@
 package com.mountainminds.kuhr.svg;
 
+import static com.mountainminds.kuhr.svg.DomReader.attr;
+import static com.mountainminds.kuhr.svg.DomReader.doubleAttr;
+
 import java.awt.Shape;
 import java.awt.geom.AffineTransform;
-import java.awt.geom.Area;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
 import java.awt.geom.Path2D;
@@ -13,7 +15,6 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
@@ -22,26 +23,27 @@ import org.xml.sax.SAXException;
 
 class SVGLoader {
 
+	private static Shape EMPTY = new Path2D.Double();
+
 	interface ShapeConsumer {
 		void consume(SVGStyles styles, AffineTransform transform, Shape shape);
 	}
 
-	private ShapeConsumer consumer;
+	private final ShapeConsumer consumer;
 
-	public SVGLoader(ShapeConsumer consumer) {
+	SVGLoader(ShapeConsumer consumer) {
 		this.consumer = consumer;
 	}
 
-	public void load(Path path) throws IOException {
+	void load(Path path) throws IOException {
 		try (InputStream in = Files.newInputStream(path)) {
 			load(in);
 		}
 	}
 
-	public void load(InputStream in) throws IOException {
-		DocumentBuilder builder;
+	void load(InputStream in) throws IOException {
 		try {
-			builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+			var builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
 			element(builder.parse(in), new SVGStyles(), new SVGTransform());
 		} catch (ParserConfigurationException | SAXException e) {
 			throw new IOException(e);
@@ -82,8 +84,11 @@ class SVGLoader {
 	 * https://www.w3.org/TR/SVG2/paths.html
 	 */
 	private Shape path(Node node) {
-		String d = DomReader.attr(node, "d", "");
-		SVGPathScanner scanner = new SVGPathScanner(d);
+		String d = attr(node, "d", "none").trim();
+		if (d.equals("none")) {
+			return EMPTY;
+		}
+		var scanner = new SVGPathScanner(d);
 		double lastX = 0.0, lastY = 0.0, lastBezierX = 0.0, lastBezierY = 0.0;
 		double cX1, cY1;
 		Path2D path = new Path2D.Double();
@@ -229,8 +234,12 @@ class SVGLoader {
 	 * https://www.w3.org/TR/SVG2/shapes.html#PolygonElement
 	 */
 	private Shape polygon(Node node) {
-		SVGPathScanner scanner = new SVGPathScanner(DomReader.attr(node, "points", ""));
-		Path2D path = new Path2D.Double();
+		String points = attr(node, "points", "");
+		if (points.isBlank()) {
+			return EMPTY;
+		}
+		var scanner = new SVGPathScanner(points);
+		var path = new Path2D.Double();
 		path.setWindingRule(getWindingRule(node));
 		if (scanner.hasMoreTokens()) {
 			path.moveTo(scanner.nextNumber(), scanner.nextNumber());
@@ -246,10 +255,13 @@ class SVGLoader {
 	 * https://www.w3.org/TR/SVG2/shapes.html#RectElement
 	 */
 	private Shape rect(Node node) {
-		double x = DomReader.doubleAttr(node, "x", 0);
-		double y = DomReader.doubleAttr(node, "y", 0);
-		double w = DomReader.doubleAttr(node, "width");
-		double h = DomReader.doubleAttr(node, "height");
+		double width = doubleAttr(node, "width", 0);
+		double height = doubleAttr(node, "height", 0);
+		if (width == 0 || height == 0) {
+			return EMPTY;
+		}
+		double x = doubleAttr(node, "x", 0);
+		double y = doubleAttr(node, "y", 0);
 		double rx = DomReader.doubleAttr(node, "rx", -1);
 		double ry = DomReader.doubleAttr(node, "ry", -1);
 		if (rx != -1 && ry == -1) {
@@ -261,9 +273,9 @@ class SVGLoader {
 		rx = Math.max(0, rx);
 		ry = Math.max(0, ry);
 		if (rx > 0 || ry > 0) {
-			return new RoundRectangle2D.Double(x, y, w, h, rx * 2, ry * 2);
+			return new RoundRectangle2D.Double(x, y, width, height, rx * 2, ry * 2);
 		} else {
-			return new Rectangle2D.Double(x, y, w, h);
+			return new Rectangle2D.Double(x, y, width, height);
 		}
 	}
 
@@ -271,10 +283,10 @@ class SVGLoader {
 	 * https://www.w3.org/TR/SVG2/shapes.html#LineElement
 	 */
 	private Shape line(Node node) {
-		double x1 = DomReader.doubleAttr(node, "x1", 0);
-		double y1 = DomReader.doubleAttr(node, "y1", 0);
-		double x2 = DomReader.doubleAttr(node, "x2", 0);
-		double y2 = DomReader.doubleAttr(node, "y2", 0);
+		double x1 = doubleAttr(node, "x1", 0);
+		double y1 = doubleAttr(node, "y1", 0);
+		double x2 = doubleAttr(node, "x2", 0);
+		double y2 = doubleAttr(node, "y2", 0);
 		return new Line2D.Double(x1, y1, x2, y2);
 	}
 
@@ -282,8 +294,12 @@ class SVGLoader {
 	 * https://www.w3.org/TR/SVGTiny12/shapes.html#PolylineElement
 	 */
 	private Shape polyline(Node node) {
-		SVGPathScanner scanner = new SVGPathScanner(DomReader.attr(node, "points", ""));
-		Path2D path = new Path2D.Double();
+		String points = attr(node, "points", "");
+		if (points.isBlank()) {
+			return EMPTY;
+		}
+		var scanner = new SVGPathScanner(points);
+		var path = new Path2D.Double();
 		if (scanner.hasMoreTokens()) {
 			path.moveTo(scanner.nextNumber(), scanner.nextNumber());
 			while (scanner.hasMoreTokens()) {
@@ -297,24 +313,24 @@ class SVGLoader {
 	 * https://www.w3.org/TR/SVGTiny12/shapes.html#CircleElement
 	 */
 	private Shape circle(Node node) {
-		double cx = DomReader.doubleAttr(node, "cx", 0);
-		double cy = DomReader.doubleAttr(node, "cy", 0);
-		double r = DomReader.doubleAttr(node, "r", 0);
+		double r = doubleAttr(node, "r", 0);
 		if (r == 0) {
-			return new Area();
+			return EMPTY;
 		}
+		double cx = doubleAttr(node, "cx", 0);
+		double cy = doubleAttr(node, "cy", 0);
 		return new Ellipse2D.Double(cx - r, cy - r, r * 2, r * 2);
 	}
 
 	private int getWindingRule(Node node) {
-		String text = DomReader.attr(node, "fill-rule", "nonzero");
-		switch (text) {
+		String fillRule = attr(node, "fill-rule", "nonzero");
+		switch (fillRule) {
 		case "nonzero":
 			return Path2D.WIND_NON_ZERO;
 		case "evenodd":
 			return Path2D.WIND_EVEN_ODD;
 		}
-		throw new IllegalArgumentException("Unknown fill-rule: " + text);
+		throw new IllegalArgumentException("Unknown fill-rule: " + fillRule);
 	}
 
 }
