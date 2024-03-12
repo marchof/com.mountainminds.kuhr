@@ -57,16 +57,16 @@ class SVGTransform {
 				t.scale(1, scanner.number());
 				break;
 			case "rotate":
-				t.rotate(scanner.number() * PI / 180.0, scanner.number(0), scanner.number(0));
+				t.rotate(rad(scanner.number()), scanner.number(0), scanner.number(0));
 				break;
 			case "skew":
-				t.shear(scanner.number(), scanner.number(0));
+				t.shear(rad(scanner.number(0)), rad(scanner.number(0)));
 				break;
 			case "skewX":
-				t.shear(Math.tan(scanner.number() * PI / 180.0), 0);
+				t.shear(Math.tan(rad(scanner.number())), 0);
 				break;
 			case "skewY":
-				t.shear(0, Math.tan(scanner.number() * PI / 180.0));
+				t.shear(0, Math.tan(rad(scanner.number())));
 				break;
 			default:
 				throw new IllegalArgumentException("Unknown transform operation: " + op);
@@ -74,6 +74,10 @@ class SVGTransform {
 			scanner.ordinal(')');
 		}
 		return new SVGTransform(t);
+	}
+
+	private static double rad(double degree) {
+		return degree * PI / 180.0;
 	}
 
 	AffineTransform getTransform() {
