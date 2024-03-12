@@ -25,22 +25,18 @@ class SVGStyles {
 			"bevel", BasicStroke.JOIN_BEVEL, //
 			"round", BasicStroke.JOIN_ROUND);
 
-	private SVGColor fill;
-	private float fillOpacity;
-	private SVGColor stroke;
-	private float strokeOpacity;
-	private float strokeWidth;
-	private int strokeLinecap;
-	private int strokeLinejoin;
+	private SVGColor fill = SVGColor.BLACK;
+	private float fillOpacity = 1.0f;
+	private SVGColor stroke = SVGColor.NONE;
+	private float strokeOpacity = 1.0f;
+	private float strokeWidth = 1.0f;
+	private int strokeLinecap = BasicStroke.CAP_BUTT;
+	private int strokeLinejoin = BasicStroke.JOIN_MITER;
+	private float strokeMiterlimit = 4.0f;
+	private float[] strokeDasharray = null;
+	private float strokeDashoffset = 0.0f;
 
 	SVGStyles() {
-		this.fill = SVGColor.BLACK;
-		this.fillOpacity = 1.0f;
-		this.stroke = SVGColor.NONE;
-		this.strokeOpacity = 1.0f;
-		this.strokeWidth = 1.0f;
-		this.strokeLinecap = BasicStroke.CAP_BUTT;
-		this.strokeLinejoin = BasicStroke.JOIN_MITER;
 	}
 
 	private SVGStyles(SVGStyles parent) {
@@ -51,6 +47,9 @@ class SVGStyles {
 		this.strokeWidth = parent.strokeWidth;
 		this.strokeLinecap = parent.strokeLinecap;
 		this.strokeLinejoin = parent.strokeLinejoin;
+		this.strokeMiterlimit = parent.strokeMiterlimit;
+		this.strokeDasharray = parent.strokeDasharray;
+		this.strokeDashoffset = parent.strokeDashoffset;
 	}
 
 	SVGStyles with(Node node) {
@@ -68,6 +67,18 @@ class SVGStyles {
 		read(attributes, "stroke-width", Float::parseFloat, w -> this.strokeWidth = w);
 		read(attributes, "stroke-linecap", LINECAPS::get, c -> this.strokeLinecap = c);
 		read(attributes, "stroke-linejoin", LINEJOINS::get, j -> this.strokeLinejoin = j);
+		read(attributes, "stroke-miterlimit", Float::parseFloat, m -> this.strokeMiterlimit = m);
+		read(attributes, "stroke-dasharray", SVGStyles::parseFloatArray, a -> this.strokeDasharray = a);
+		read(attributes, "stroke-dashoffset", Float::parseFloat, o -> this.strokeDashoffset = o);
+	}
+
+	private static float[] parseFloatArray(String s) {
+		var tokens = s.split("[,\\s]+");
+		var array = new float[tokens.length];
+		for (int i = 0; i < tokens.length; i++) {
+			array[i] = Float.parseFloat(tokens[i]);
+		}
+		return array;
 	}
 
 	private static <T> void read(Function<String, Optional<String>> attributes, String attr,
@@ -109,7 +120,8 @@ class SVGStyles {
 	}
 
 	Stroke createStroke() {
-		return new BasicStroke(strokeWidth, strokeLinecap, strokeLinejoin);
+		return new BasicStroke(strokeWidth, strokeLinecap, strokeLinejoin, strokeMiterlimit, strokeDasharray,
+				strokeDashoffset);
 	}
 
 }
