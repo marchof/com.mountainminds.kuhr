@@ -68,7 +68,7 @@ class SVGColor {
 
 	@Override
 	public String toString() {
-		return "SVGColor[%s, %s, %s, %s]".formatted(r, g, b, a);
+		return String.format("SVGColor[%s, %s, %s, %s]", r, g, b, a);
 	}
 
 }

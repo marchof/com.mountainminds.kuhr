@@ -54,7 +54,7 @@ class SVGTransformScanner {
 	void ordinal(char c) {
 		skipWhitespaces();
 		if (c != pop()) {
-			throw new IllegalArgumentException("Missing '%s' in '%s'".formatted(c, t));
+			throw new IllegalArgumentException(String.format("Missing '%s' in '%s'", c, t));
 		}
 	}
 

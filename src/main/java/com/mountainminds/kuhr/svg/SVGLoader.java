@@ -222,7 +222,8 @@ class SVGLoader {
 					lastY = lastBezierY = cp.getY();
 					break;
 				default:
-					throw new IllegalArgumentException("Unsupported Command: %s in %s".formatted((char) command, d));
+					throw new IllegalArgumentException(
+							String.format("Unsupported Command: %s in %s", (char) command, d));
 				}
 				first = false;
 			} while (scanner.nextIsNumber());

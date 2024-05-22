@@ -75,11 +75,11 @@ public class SVGLoaderIT {
 			g.draw(shape);
 		});
 
-		try (var in = new URL(INPATTERN.formatted(testcase)).openStream()) {
+		try (var in = new URL(String.format(INPATTERN, testcase)).openStream()) {
 			loader.load(in);
 		}
 
-		var outpath = Path.of(OUTPATTERN.formatted(testcase));
+		var outpath = Path.of(String.format(OUTPATTERN, testcase));
 		Files.createDirectories(outpath.getParent());
 		try (var out = Files.newOutputStream(outpath)) {
 			ImageIO.write(image, "PNG", out);
@@ -93,9 +93,9 @@ public class SVGLoaderIT {
 			w.println("<table>");
 			for (var name : TESTCASES) {
 				w.println("<tr>");
-				w.println("<td><img src=\"%s.png\" width=\"480\" height=\"360\"></td>".formatted(name));
-				w.println(
-						"<td><img src=\"%s\" width=\"480\" height=\"360\"></td>".formatted(INPATTERN.formatted(name)));
+				w.println(String.format("<td><img src=\"%s.png\" width=\"480\" height=\"360\"></td>", name));
+				w.println(String.format("<td><img src=\"%s\" width=\"480\" height=\"360\"></td>",
+						String.format(INPATTERN, name)));
 				w.println("</tr>");
 			}
 			w.println("</table>");
